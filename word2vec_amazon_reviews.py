@@ -7,37 +7,53 @@ Original file is located at
     https://colab.research.google.com/drive/1plYm1nslqx3FbzgIDFV_BYy6KKfBKNB4
 """
 
-# Remove problematic versions
+# These commands are for Google Colab; skip or modify if running locally.
 !pip uninstall -y gensim scipy numpy
-
-# Install versions known to work well together
 !pip install numpy==1.23.5
 !pip install scipy==1.10.1
 !pip install gensim==4.3.1
 
+#imports
 import gensim
 import pandas as pd
 
+#Mount Google Drive (for Colab)
 from google.colab import drive
 drive.mount('/content/drive')
 
-df=pd.read_json('/content/drive/MyDrive/data/tutrial_tensorflow/review/Cell_Phones_and_Accessories_5.json',lines=True)
+ #Load Dataset
+df=pd.read_json('/Cell_Phones_and_Accessories_5.json',lines=True)
 
-df.head()
+# Display the first few rows of the dataset
+print("Sample data:")
+print(df.head())
 
+#Text Preprocessing
+# -----------------------------
+# Tokenize and lowercase the review text using Gensim's simple_preprocess
 review_text=df.reviewText.apply(gensim.utils.simple_preprocess)
 review_text
 
+#Train Word2Vec Model
 model=gensim.models.Word2Vec(
     window=10,
     min_count=2,
     workers=4
 )
 
+# Build the vocabulary from tokenized text
 model.build_vocab(review_text,progress_per=1000)
 
+# Train the model on the tokenized reviews
 model.train(review_text,total_examples=model.corpus_count,epochs=model.epochs)
 
-model.wv.most_similar('bad')
+#Word Similarity Queries
+# -----------------------------
+# Most similar words to "bad"
+print("\nWords most similar to 'bad':")
+print(model.wv.most_similar('bad'))
 
-model.wv.similarity(w1='good',w2='great')
+
+# Similarity between two words
+print("\nSimilarity between 'good' and 'great':")
+print(model.wv.similarity(w1='good', w2='great'))
